@@ -24,13 +24,20 @@ rejected_y = secuencia_y[~validos]
 assert accepted_x.shape[0] == N
 
 # Grafica
-plt.plot(x, P)
-plt.plot(x, np.repeat([Pmax], N))
-plt.scatter(rejected_x, rejected_y, color='red')
-plt.scatter(accepted_x, accepted_y, color='green')
-plt.legend(["Distribución de probabilidad", "Pmax", "Puntos rechazados", "Puntos aceptados"])
+fig, axs = plt.subplots(1, 2)
 
-plt.title("Método von Neumann para P(x) = 2/pi sin^2(x)")
-plt.xlabel("x")
-plt.ylabel("y")
+axs[0].plot(x, P)
+axs[0].plot(x, np.repeat([Pmax], N))
+axs[0].scatter(rejected_x, rejected_y, color='red')
+axs[0].scatter(accepted_x, accepted_y, color='green')
+axs[0].legend(["Distribución de probabilidad", "Pmax", "Puntos rechazados", "Puntos aceptados"])
+
+axs[0].set_title("Método von Neumann para P(x) = 2/pi sin^2(x)")
+axs[0].set_xlabel("x")
+axs[0].set_ylabel("y")
+
+axs[1].hist(accepted_y, bins=50)
+axs[1].set_xlabel("P(x)")
+axs[1].set_ylabel("Conteo")
+axs[1].set_title("Histograma de los P(x) generados y aceptados")
 plt.show()
