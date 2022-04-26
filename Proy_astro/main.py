@@ -5,10 +5,26 @@ import pandas as pd
 import math
 from tqdm import tqdm
 
+"""
+Integrantes
+
+Diego de Jesus Ramirez Rodriguez A00828821
+Emmanuel Alexei Ortiz Aldana A01747297
+René Francisco Basáñez Córdoba A01700413
+"""
+
 def y_pred(x, m, b) -> float:
+    """
+    Calcula la y predecida por el modelo
+    """
     return m*x/(math.sqrt(b**2 + x**2))
 
 def x2(x_list, y_list, b, m, sigma) -> float:
+    """
+    Toma la lista de valores en x y y, los valores de b y m, y sigma.
+
+    Calcula la chi cuadrada para estos datos, segun el modelo de y_mod
+    """
     # TODO: Pasar sigma como vector y agregarlo al zip
 
     total = 0
@@ -26,6 +42,11 @@ Y = datos_df['vc[km/s]']
 sigma_error = datos_df["v_error[km/s]"]
 
 def run_genetic_algo(X, Y, m = 100, b = 1):
+    """
+    Ejecuta 1 millon de iteraciones del algoritmo genetico con los parametros iniciales b y m
+
+    Regresa los estados, y los valores de chi cuadrada en cada iteracion
+    """
     estados = [()]
     # 1. Generar m y b aleatorios
     # m = 100 # v0
@@ -74,6 +95,13 @@ def run_genetic_algo(X, Y, m = 100, b = 1):
     return estados, xi_valores
 
 def graficar_resultados(estados, xi_valores):
+    """
+    Grafica 4 graficas: 
+        - Los valores iniciales contra la y_mod
+        - Los parametros b y m durante las iteraciones
+        - Histograma de b
+        - Histograma de m
+    """
     # Graficas de resultados
     m, b = estados[-1]
 
