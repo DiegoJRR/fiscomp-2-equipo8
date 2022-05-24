@@ -1,8 +1,7 @@
-from functools import partial
 import numpy as np
+import random
 
 def y_pred(x, params):
-    # TODO: Vectorizar
    return sum([params[i]*x**i for i in range(len(params))]) 
 
 def chi_squared(X, Y, params, sigma):
@@ -13,11 +12,12 @@ def chi_squared(X, Y, params, sigma):
 
     return total
 
-
 class GeneticAlgo:
     def __init__(self, X, Y, parameter_ranges, N):
         self.X = X
         self.Y = Y
+
+        self.orig_N = N
         self.N = N
 
         self.ranges = parameter_ranges
@@ -25,6 +25,8 @@ class GeneticAlgo:
         self.num_params = len(parameter_ranges)
         self.population = np.zeros((self.N, self.num_params))
         self.aptitudes = np.zeros(self.N)
+
+        self.PUNTO_CRUZAMIENTO = 3
 
         self.__initial_population()
         self.__eval_aptitude()
@@ -38,10 +40,14 @@ class GeneticAlgo:
             self.population[i] = parameters
 
     def __eval_aptitude(self):
+        self.aptitudes = np.zeros(self.N)
         for i in range(self.N):
-            self.aptitudes[i] = 1/chi_squared(self.X, self.Y, self.population[i], 5)
+            self.aptitudes[i] = self.__aptitude(self.population[i]) 
 
-    def __metodo_ruleta(self):
+    def __aptitude(self, individuo):
+        return 1/chi_squared(self.X, self.Y, individuo, 5)
+
+    def __metodo_ruleta(self) -> int:
         S = self.aptitudes.sum()
         S_gen = S*np.random.random()
 
@@ -51,16 +57,49 @@ class GeneticAlgo:
 
             if partial_sum > S_gen:
                 return i
-        
-    def __reproduce(self):
+    
+    def reproduce(self):
         # Seleccionar pares de individuos
-        indiv_1 = self.population[self.__metodo_ruleta()]
+        k1 = self.__metodo_ruleta()
 
-        indiv_2 = indiv_1
-        while indiv_2 == indiv_1:
+        k2 = k1
+        while k2 == k1:
             # Con esto nos aseguramos que nunca selecciona el mismo individuo dos veces
-            indiv_2 = self.population[self.__metodo_ruleta()]
+            k2 = self.__metodo_ruleta()
+
+        # Cruzamiento de los parametros
+        indiv_1 = self.population[k1]
+        indiv_2 = self.population[k2]
+
+        hijo = indiv_1.copy()
+        hijo[self.PUNTO_CRUZAMIENTO:] = indiv_2[self.PUNTO_CRUZAMIENTO:]
+
+        if (np.random.random() < 0.1):
+            hijo = self.__mutate(hijo)
+
+        self.population = np.append(self.population, [hijo], axis=0)
+        self.aptitudes = np.append(self.aptitudes, self.__aptitude(hijo))
+        self.N = len(self.population)
+
+    def control_population(self) -> None:
+        """Elimina a los peores individuos de la poblacion"""
+
+        for _ in range(self.N - self.orig_N):
+            idx = self.aptitudes.argmin()
+            self.population = np.delete(self.population, idx, axis=0)
+            self.aptitudes = np.delete(self.aptitudes, idx)
+            
+        self.N = len(self.population)
 
     def __mutate(self, individual):
         """Mutacion aleatoria del individuo"""
-        
+        i = random.randint(0, self.num_params - 1)
+
+        j = i
+        while j == i:
+            # Nos aseguramos que no sea el mismo indice el que se va a cambiar
+            j = random.randint(0, self.num_params - 1)
+
+        individual[i], individual[j] = individual[j], individual[i]
+
+        return individual
